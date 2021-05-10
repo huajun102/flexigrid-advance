@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jqgrid-flexigrid列表插件替代优化</title>
+    <link rel="stylesheet" href="//unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!--在这里改样式----->
+    <link rel="stylesheet" href="lib/grid/index.css">
+
+    <script type="text/javascript" src="//cdn.staticfile.org/vue/2.6.12/vue.min.js"></script>
+    <script type="text/javascript" src="//cdn.staticfile.org/axios/0.21.0/axios.min.js"></script>
+    <script type="text/javascript" src="//unpkg.com/element-ui/lib/index.js"></script>
+    <script type="text/javascript" src="//cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/grid/flexigrid-vue.js"></script>
+
+    <script type="text/javascript">
+        $(function(){
+            // 高级搜索重置
+            $('#reset').click(function(){
+                //指定url+参数再进行刷新
+                $("#flexigrid").flexOptions({url: './data/member.json'}).flexReload();
+            });
+
+            /**
+             * @param p Object:
+             * url:'ajax地址',
+             * colModel-列-[{isKey:'是否主键',name:'字段名',display:'显示标题',width:'宽度',edit_callback:'输入框失去焦点后的更新回调'}],
+             * searchitems-搜索条件:[{display:'显示标题','搜索字段名'}],
+             * buttons-表头操作按钮:[{display:'展示效果',name:'函数类型名',title:'悬停标题',onpress:回调函数名}]
+             * colButtons-列操作按钮组:[{display:'展示效果',name:'函数类型名',title:'悬停标题',callback:'回调函数名'}],示例：[{display:'升级',title:'为用户升级',callback:function (row,index){alert(`想要升级会员${row.member_id}?`)}}]
+             */
+            $("#flexigrid").flexigrid({
+                //ajax路径
+                url: './data/member.json?t=1',//默认带了curpage=当前页号
+                //每页条数
+                pageSize:10,
+                //width:600,
+                height:600,
+                //数据列
+                colModel : [
+                    {display: '操作', name : 'operation', width : 100, sortable : false, align: 'center', className: 'handle-s'},
+                    {display: 'ID', name : 'member_id', width : 80, sortable : true, align: 'center',isKey:1},
+                    {display: '姓名', name : 'member_name', width : 150, sortable : true, align: 'left'},//加了回调函数的会以输入框形式显示
+                    {display: '邮件', name : 'member_email', width : 150, sortable : true, align: 'left',type:'email',edit_callback:edit_col},
+                    {display: '手机', name : 'member_mobile', width : 120, sortable : true, align: 'center'},
+                    {display: '性别', name : 'member_sex', width : 80, sortable : true, align: 'center'},
+                    {display: '真名', name : 'member_truename', width : 120, sortable : true, align: 'left',edit_callback:edit_col},
+                    {display: '生日', name : 'member_birthday', width : 120, sortable : true, align: 'center', type:'date',edit_callback:edit_col},
+                    {display: '注册时间', name : 'member_time', width : 120, sortable : true, align: 'center'},
+                    {display: '登录时间', name : 'member_login_time', width : 120, sortable : true, align: 'center'},
+                    {display: '登录IP', name : 'member_login_ip', width : 160, sortable : true, align: 'center'},
+                ],
+                //表头按钮组
+                buttons : [
+                    {display: '<i class="fa fa-plus"></i>添加会员', name : 'add', bclass : 'add', title : '添加会员', onpress : fg_operation },
+                    {display: '<i class="fa fa-file-excel-o"></i>导出会员', name : 'csv', bclass : 'csv', title : '导出会员', onpress : fg_operation }
+                ],
+                //搜索框
+                searchitems : [
+                    {display: 'ID', name : 'member_id'},
+                    {display: '姓名', name : 'member_name'},
+                    {display: '邮件', name : 'member_email'},
+                    {display: '性别', name : 'member_sex',type:'select',options:[{label:'男',value:1},{label: '女',value:0},{label: '保密',value:2}]},
+                    {display: '生日', name : 'member_birthday',type:'date'},
+                    {display: '登录时间', name : 'member_login_time',type:'datetime'},
+                ],
+                //自定义列控按钮
+                colButtons:[
+                    {display: '升级', callback : upgrade},
+                    {display: '拉黑', callback : blacklist}
+                ],
+            });
+
+        });
+
+        function fg_operation(name) {
+            if (name == 'add') {
+                console.log('添加完成');
+            }
+            if (name == 'csv') {
+                if ($('.trSelected').length == 0) {
+                    if (!confirm('是否要下载所有数据？')) {
+                        return false;
+                    }
+                }
+                //获取勾选记录的id
+                var itemids = new Array();
+                $('.trSelected').each(function(i){
+                    itemids[i] = $(this).attr('data-id');
+                });
+                fg_csv(itemids);
+            }
+        }
+
+        function fg_csv(ids) {
+            let id = ids.join(',');
+            console.log('已导出'+id)
+        }
+        function edit_col(row,col,value,index){
+            console.log('已修改'+row.member_id+'的'+col+'列为'+value)
+        }
+        function upgrade(row,index){
+            alert('已升级'+row.member_id)
+        }
+        function blacklist(row,index){
+            alert('已拉黑'+row.member_id)
+        }
+    </script>
+</head>
+<body>
+    <div id="flexigrid"></div>
+</body>
+</html>
