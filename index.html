@@ -23,11 +23,14 @@
 
             /**
              * @param p Object:
-             * url:'ajax地址',
-             * colModel-列-[{isKey:'是否主键',name:'字段名',display:'显示标题',width:'宽度',edit_callback:'输入框失去焦点后的更新回调'}],
+             * url:'ajax列表地址',
+             * addUrl:'表单创建提交地址',
+             * editUrl:'表单编辑提交地址',
+             * delUrl:'删除记录地址',
+             * colModel-列-[{isKey:'是否主键',name:'字段名',display:'显示标题',width:'宽度',submitable:'是否参与表单提交',remark:'字段描述',type:'input类型',options:[select类型选项]}],
              * searchitems-搜索条件:[{display:'显示标题','搜索字段名'}],
-             * buttons-表头操作按钮:[{display:'展示效果',name:'函数类型名',title:'悬停标题',onpress:回调函数名}]
-             * colButtons-列操作按钮组:[{display:'展示效果',name:'函数类型名',title:'悬停标题',callback:'回调函数名'}],示例：[{display:'升级',title:'为用户升级',callback:function (row,index){alert(`想要升级会员${row.member_id}?`)}}]
+             * buttons-表头操作按钮:[{display:'展示效果',name:'函数类型名',title:'悬停标题',onpress:回调函数}]
+             * colButtons-列操作捥:[{display:'展示效果',name:'函数类型名',title:'悬停标题',callback:'回调函数'}],示例：[{display:'升级',title:'为用户升级',callback:function (row,index){alert(`想要升级会员${row.member_id}?`)}}]
              */
             $("#flexigrid").flexigrid({
                 //ajax路径
@@ -40,12 +43,12 @@
                 colModel : [
                     {display: '操作', name : 'operation', width : 100, sortable : false, align: 'center', className: 'handle-s'},
                     {display: 'ID', name : 'member_id', width : 80, sortable : true, align: 'center',isKey:1},
-                    {display: '姓名', name : 'member_name', width : 150, sortable : true, align: 'left'},//加了回调函数的会以输入框形式显示
-                    {display: '邮件', name : 'member_email', width : 150, sortable : true, align: 'left',type:'email',edit_callback:edit_col},
-                    {display: '手机', name : 'member_mobile', width : 120, sortable : true, align: 'center'},
-                    {display: '性别', name : 'member_sex', width : 80, sortable : true, align: 'center'},
-                    {display: '真名', name : 'member_truename', width : 120, sortable : true, align: 'left',edit_callback:edit_col},
-                    {display: '生日', name : 'member_birthday', width : 120, sortable : true, align: 'center', type:'date',edit_callback:edit_col},
+                    {display: '姓名', name : 'member_name', width : 150, sortable : true, align: 'left', submitable:true},//加了回调函数的会以输入框形式显示
+                    {display: '邮件', name : 'member_email', width : 150, sortable : true, align: 'left',type:'email',edit_callback:edit_col ,submitable:true},
+                    {display: '手机', name : 'member_mobile', width : 120, sortable : true, align: 'center',submitable:true},
+                    {display: '性别', name : 'member_sex', width : 80, sortable : true, align: 'center',submitable:true,type:'select',options:[{value:1,label:'男'},{value:2,label:'女'}]},
+                    {display: '真名', name : 'member_truename', width : 120, sortable : true, align: 'left',edit_callback:edit_col,submitable:true},
+                    {display: '生日', name : 'member_birthday', width : 120, sortable : true, align: 'center', type:'date',edit_callback:edit_col,submitable:true},
                     {display: '注册时间', name : 'member_time', width : 120, sortable : true, align: 'center'},
                     {display: '登录时间', name : 'member_login_time', width : 120, sortable : true, align: 'center'},
                     {display: '登录IP', name : 'member_login_ip', width : 160, sortable : true, align: 'center'},
@@ -67,7 +70,8 @@
                 //自定义列控按钮
                 colButtons:[
                     {display: '升级', callback : upgrade},
-                    {display: '拉黑', callback : blacklist}
+                    {display: '删除', callback : blacklist},
+                    {display: '编辑', callback : onEdit}
                 ],
             });
 
@@ -75,7 +79,8 @@
 
         function fg_operation(name) {
             if (name == 'add') {
-                console.log('添加完成');
+                //console.log('添加完成');
+                $('#flexigrid').dialogAdd('添加会员')
             }
             if (name == 'csv') {
                 if ($('.trSelected').length == 0) {
@@ -103,7 +108,10 @@
             alert('已升级'+row.member_id)
         }
         function blacklist(row,index){
-            alert('已拉黑'+row.member_id)
+            $('#flexigrid').dialogDel('是否要删除会员-'+row.member_id,{id:row.member_id})
+        }
+        function onEdit(row,index){
+            $('#flexigrid').dialogEdit('编辑会员-'+row.member_id, row)
         }
     </script>
 </head>
